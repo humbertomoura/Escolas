@@ -25,7 +25,7 @@ def get_data():
 
     return data
 
-st.title("Dispersão das escolas no Brasil")
+st.title("Dispersão das Escolas no Brasil")
 st.subheader("Públicas, Privadas, Estados e Municípios")
 st.write('Contato: humberto@humbertomoura.com.br')
 
@@ -111,7 +111,10 @@ if ma2:
             initial_view_state=pdk.ViewState(
             latitude=lat,
             longitude=lon, 
-            zpickable=True,
+            zoom=9, 
+            pitch=50, 
+            bearing=-27.36,
+            pickable=True,
             opacity=0.8,
             stroked=True,
             filled=True,
