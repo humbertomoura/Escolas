@@ -3,6 +3,10 @@ import pandas as pd
 import copy
 import numpy as np
 import pydeck as pdk
+import time
+
+full_time = time.time()
+print("Inicio Total")
 
 st.set_page_config(layout="wide")
 
@@ -10,12 +14,19 @@ municipio = 'Todos'
 categoria = 'Todas'
 uf = 'Todas'
 
+
+
+
+
 @st.cache(suppress_st_warning=True)
 def get_data():
-    data = pd.read_csv('escolas.csv', sep=';')
-    data = data.drop(axis=1, columns=["Restrição de Atendimento","Localidade Diferenciada","Dependência Administrativa","Categoria Escola Privada","Conveniada Poder Público","Regulamentação pelo Conselho de Educação","Outras Ofertas Educacionais"])
-    data.dropna(subset=['lat', 'lon'],inplace=True, axis=0, how = 'all')
-    data.dropna(subset=['Escola'], inplace=True, axis=0, how='all')
+    full_time = time.time()
+    print("Inicio getdata()")
+    data = pd.read_csv('dados/escolas.csv', sep=';')
+    data = data.drop(axis=1, columns=["Restrição de Atendimento","Endereço", "Telefone","Código INEP","Localização","Localidade Diferenciada","Dependência Administrativa","Categoria Escola Privada","Conveniada Poder Público","Regulamentação pelo Conselho de Educação","Outras Ofertas Educacionais"])
+    data = data.dropna(subset=['lat', 'lon'], axis=0, how = 'all',)
+    data = data.dropna(subset=['Escola'], axis=0, how = 'all',)
+  
     if uf != 'Todas':
         data = data.query('`UF`=="' + uf + '"')
     if municipio != 'Todos':
@@ -23,6 +34,7 @@ def get_data():
     if categoria != 'Todas':
         data = data.query('`Categoria Administrativa`=="' + categoria + '"')
 
+    print("Fim getdata() --- %s segundos ---" % (time.time() - start_time))
     return data
 
 st.title("Dispersão das Escolas no Brasil")
@@ -32,38 +44,54 @@ st.write('Contato: humberto@humbertomoura.com.br')
 st.sidebar.header("Exibição")
 tab = st.sidebar.checkbox('Mostrar Tabela',value=True)
 if tab:
+    start_time = time.time()
+    print("Inicio Tabela")
+    
     st.subheader("Todos os Dados")
     tabela = st.dataframe(get_data())
+    st.write(tabela)
+    print("Fim Tabela --- %s segundos ---" % (time.time() - start_time))
 
 
 ma = st.sidebar.checkbox('Mostrar Mapa Distribuição',value=True)
 if ma:
+    start_time = time.time()
+    print("Inicio Mapa Simples")
+
+
     st.subheader("Distribuição Geográfica")
     mapa = st.map(get_data())
+    print("Fim Mapa Simples --- %s segundos ---" % (time.time() - start_time))
 
 
 
-#cols = "Restrição de Atendimento", "Escola", "Código INEP", "UF", "Município","Localização", "Localidade Diferenciada", "Categoria Administrativa", "Endereço", "Telefone","Dependência Administrativa","Categoria Escola Privada","Conveniada Poder Público","Regulamentação pelo Conselho de Educação","Porte da Escola","Etapas e Modalidade de Ensino Oferecidas","Outras Ofertas Educacionais","lat","lon"]
+
+# #cols = "Restrição de Atendimento", "Escola", "Código INEP", "UF", "Município","Localização", "Localidade Diferenciada", "Categoria Administrativa", "Endereço", "Telefone","Dependência Administrativa","Categoria Escola Privada","Conveniada Poder Público","Regulamentação pelo Conselho de Educação","Porte da Escola","Etapas e Modalidade de Ensino Oferecidas","Outras Ofertas Educacionais","lat","lon"]
+
+print("Inicio Categ Administrativa")
+start_time = time.time()
 
 st.sidebar.header("Escolas")
 cat = st.sidebar.radio("Categoria Administrativa",('Todas','Pública', 'Privada'))
 categoria = cat
-if categoria=='Todas':
+if categoria=='Todas':  
     novo = get_data()
     if tab:
         tabela.write(novo)
     if ma:
         mapa.map(novo)
 else:
-    novo = get_data().query('`Categoria Administrativa`=="' + categoria + '"')
-    novo = get_data().query('Município=="' + municipio + '"')
+    data = get_data().query('`Categoria Administrativa`=="' + categoria + '"')
     if tab:
-        tabela.write(novo)
-
+        tabela.write(data)
     if ma:
-        mapa.map(novo)
+        mapa.map(data)
+print("Fim Cat. Administrativa --- %s segundos ---" % (time.time() - start_time))
+
 da = ['Todas']
 
+start_time = time.time()
+print("Início UF")
 uf = st.sidebar.selectbox('UF', da + get_data()['UF'].unique().tolist(), index=0)
 if uf =='Todas':
     if tab:
@@ -77,7 +105,10 @@ else:
 
     if ma:
         mapa.map(novo)
+print("Fim UF --- %s segundos ---" % (time.time() - start_time))
 
+start_time = time.time()
+print("Início Município")
 da = ['Todos']
 municipio = st.sidebar.selectbox('Município', da + get_data()['Município'].unique().tolist(), index=0)
 if municipio=='Todos':
@@ -93,15 +124,19 @@ else:
 
     if ma:
         mapa.map(novo)
-
+start_time = time.time()
+print("Fim Município --- %s segundos ---" % (time.time() - start_time))
 
   
 # cols = ["Restrição de Atendimento", "Escola", "Código INEP", "UF", "Município","Localização", "Localidade Diferenciada", "Categoria Administrativa", "Endereço", "Telefone","Dependência Administrativa","Categoria Escola Privada","Conveniada Poder Público","Regulamentação pelo Conselho de Educação","Porte da Escola","Etapas e Modalidade de Ensino Oferecidas","Outras Ofertas Educacionais","lat","lon"]
-cols = ["Código INEP","Localização","Endereço", "Telefone","Porte da Escola","Etapas e Modalidade de Ensino Oferecidas"]
+cols = ["Porte da Escola","Etapas e Modalidade de Ensino Oferecidas"]
 
 
 lat = -30.0277
 lon = -51.2287
+
+start_time = time.time()
+print("Início Mapa Visão Geral")
 ma2 = st.sidebar.checkbox('Mostrar Visão Geral',value=True)
 if ma2:
     st.subheader("Mapa Visão Geral")
@@ -135,6 +170,10 @@ if ma2:
         ],
     )
 )
+
+print("Fim Mapa Visão Geral --- %s segundos ---" % (time.time() - start_time))
+print("Fim Total --- %s segundos ---" % (time.time() - full_time))
+
 
 
 
