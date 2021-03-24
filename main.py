@@ -15,10 +15,6 @@ categoria = 'Todas'
 uf = 'Todas'
 
 
-
-
-
-
 def get_data():
     full_time = time.time()
     print("Inicio getdata()")
@@ -26,6 +22,7 @@ def get_data():
     data = data.drop(axis=1, columns=["Restrição de Atendimento","Endereço", "Telefone","Código INEP","Localização","Localidade Diferenciada","Dependência Administrativa","Categoria Escola Privada","Conveniada Poder Público","Regulamentação pelo Conselho de Educação","Outras Ofertas Educacionais"])
     data = data.dropna(subset=['lat', 'lon'], axis=0, how = 'all',)
     data = data.dropna(subset=['Escola'], axis=0, how = 'all',)
+    data.to_csv('dados/escolas2.csv')
   
     if uf != 'Todas':
         data = data.query('`UF`=="' + uf + '"')
