@@ -18,7 +18,7 @@ uf = 'Todas'
 
 
 
-@st.cache(suppress_st_warning=True, ttl=3600)
+
 def get_data():
     full_time = time.time()
     print("Inicio getdata()")
